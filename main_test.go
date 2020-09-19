@@ -97,22 +97,22 @@ func helper(t *testing.T) {
 
 					encrypted, errEncrypt := codeSrc.encrypt(publicKey, []byte(txt.text))
 					if errEncrypt != nil {
-						t.Errorf("key=%4s text=%5s src=%8s dst=%8s error encrypt: %v", k.name, txt.name, codeSrc.name, codeDst.name, errEncrypt)
+						t.Errorf("key=%4s text=%5s src=%9s dst=%9s error encrypt: %v", k.name, txt.name, codeSrc.name, codeDst.name, errEncrypt)
 					}
 
 					decrypted, errDecrypt := codeDst.decrypt(privateKey, encrypted)
 					if errEncrypt != nil {
-						t.Errorf("key=%4s text=%5s src=%8s dst=%8s error decrypt: %v", k.name, txt.name, codeSrc.name, codeDst.name, errDecrypt)
+						t.Errorf("key=%4s text=%5s src=%9s dst=%9s error decrypt: %v", k.name, txt.name, codeSrc.name, codeDst.name, errDecrypt)
 					}
 
 					decryptedStr := string(decrypted)
 
 					if txt.text != decryptedStr {
-						t.Errorf("key=%4s text=%5s src=%8s dst=%8s FAIL wanted=[%s] got=[%s]", k.name, txt.name, codeSrc.name, codeDst.name, txt.text, decryptedStr)
+						t.Errorf("key=%4s text=%5s src=%9s dst=%9s FAIL wanted=[%s] got=[%s]", k.name, txt.name, codeSrc.name, codeDst.name, txt.text, decryptedStr)
 						continue
 					}
 
-					t.Logf("key=%4s text=%5s src=%8s dst=%8s good", k.name, txt.name, codeSrc.name, codeDst.name)
+					t.Logf("key=%4s text=%5s src=%9s dst=%9s good", k.name, txt.name, codeSrc.name, codeDst.name)
 				}
 			}
 		}
