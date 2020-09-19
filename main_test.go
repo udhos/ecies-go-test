@@ -26,7 +26,7 @@ type testKey struct {
 }
 
 var testTableKey = []testKey{
-	{"key1",
+	{"key1-secp256r1",
 		`
 -----BEGIN EC PRIVATE KEY-----
 MHcCAQEEICqetgUe4k7mYXgR/nOKV7JRYO/6ETgmQheWqyL9EIwhoAoGCCqGSM49
@@ -39,6 +39,21 @@ I2G4LStZ2hn0cfgzT8VdJCkRo+cynYpTOA==
 MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE83buecyru7JmdZZFoUdY9jn12ht7
 YYHXMGhMmXjX4dd8gz/VuWdVI2G4LStZ2hn0cfgzT8VdJCkRo+cynYpTOA==
 -----END EC PUBLIC KEY-----
+`,
+	},
+	{"key2-secp256k1",
+		`
+-----BEGIN EC PRIVATE KEY-----
+MHQCAQEEINsivHoCjUWXSPehV2GDE3XVzXrA6FAmyFky5qq4MgKjoAcGBSuBBAAK
+oUQDQgAEBrJYimuC+3TnS87Vm7dhX/8bGikvljw2/3V0z+RLQ4GwPNP1/qfYQRT8
+bU9VNRWEde78YVGI6z8Sdqd0JjJDEw==
+-----END EC PRIVATE KEY-----
+`,
+		`
+-----BEGIN PUBLIC KEY-----
+MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEBrJYimuC+3TnS87Vm7dhX/8bGikvljw2
+/3V0z+RLQ4GwPNP1/qfYQRT8bU9VNRWEde78YVGI6z8Sdqd0JjJDEw==
+-----END PUBLIC KEY-----
 `,
 	},
 }
@@ -82,11 +97,13 @@ func helper(t *testing.T) {
 		privateKey, errKey := privateKeyFromPemStr(k.strPEMPriv)
 		if errKey != nil {
 			t.Errorf("could not load private key from pem: %v", errKey)
+			continue
 		}
 
 		publicKey, errKey := publicKeyFromPemStr(k.strPEMPub)
 		if errKey != nil {
 			t.Errorf("could not load public key from pem: %v", errKey)
+			continue
 		}
 
 		for _, txt := range testTableText {
@@ -98,11 +115,13 @@ func helper(t *testing.T) {
 					encrypted, errEncrypt := codeSrc.encrypt(publicKey, []byte(txt.text))
 					if errEncrypt != nil {
 						t.Errorf("key=%4s text=%5s src=%9s dst=%9s error encrypt: %v", k.name, txt.name, codeSrc.name, codeDst.name, errEncrypt)
+						continue
 					}
 
 					decrypted, errDecrypt := codeDst.decrypt(privateKey, encrypted)
 					if errEncrypt != nil {
 						t.Errorf("key=%4s text=%5s src=%9s dst=%9s error decrypt: %v", k.name, txt.name, codeSrc.name, codeDst.name, errDecrypt)
+						continue
 					}
 
 					decryptedStr := string(decrypted)
