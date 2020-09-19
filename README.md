@@ -11,5 +11,12 @@ https://golang.org/pkg/crypto/elliptic/#P256
 ```
 git clone https://github.com/udhos/ecies-go-test
 cd ecies-go-test
+go install ./example/ecies-btc
+ecies-btc
+```
+
+```
+git clone https://github.com/udhos/ecies-go-test
+cd ecies-go-test
 go test
 ```

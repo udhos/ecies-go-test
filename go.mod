@@ -7,7 +7,7 @@ replace github.com/danielhavir/go-ecies => ../go-ecies
 //replace github.com/danielhavir/go-ecies => /home/evsilma/dev/go-ecies
 
 require (
-	github.com/btcsuite/btcd v0.21.0-beta // indirect
+	github.com/btcsuite/btcd v0.21.0-beta
 	github.com/danielhavir/go-ecies v0.0.0-00010101000000-000000000000
 	github.com/ecies/go v1.0.1
 	github.com/ethereum/go-ethereum v1.9.21
