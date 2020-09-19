@@ -76,11 +76,11 @@ type testCode struct {
 
 var testTableCode = []testCode{
 	{"ethereum", encryptEthereum, decryptEthereum},
-	{"havir", encryptHavir, decryptHavir},
+	{"secp256r1-havir", encryptHavir, decryptHavir},
 	{"obscuren", encryptObscuren, decryptObscuren},
 	{"bitcoin", encryptBitcoin, decryptBitcoin},
 	{"sghcrypto", encryptSghcrypto, decryptSghcrypto},
-	{"ecies_go", encryptEciesgo, decryptEciesgo},
+	{"ecp256k1-ecies_go", encryptEciesgo, decryptEciesgo},
 }
 
 // TestEncryptDecrypt performs several tests.
