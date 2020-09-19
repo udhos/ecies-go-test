@@ -9,6 +9,7 @@ replace github.com/danielhavir/go-ecies => ../go-ecies
 require (
 	github.com/btcsuite/btcd v0.21.0-beta // indirect
 	github.com/danielhavir/go-ecies v0.0.0-00010101000000-000000000000
+	github.com/ecies/go v1.0.1
 	github.com/ethereum/go-ethereum v1.9.21
 	github.com/gitzhou/bitcoin-ecies v0.0.0-20190123122136-256022cb3655
 	github.com/nnitquan/sghcrypto v0.0.0-20191220061915-7ee05b04659c

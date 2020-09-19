@@ -7,10 +7,12 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"log"
 	"math/big"
 	"testing"
 
 	havir "github.com/danielhavir/go-ecies/ecies"
+	ecies_go "github.com/ecies/go"
 	ethereum "github.com/ethereum/go-ethereum/crypto/ecies"
 	bitcoin "github.com/gitzhou/bitcoin-ecies"
 	sghcrypto "github.com/nnitquan/sghcrypto/util"
@@ -63,6 +65,7 @@ var testTableCode = []testCode{
 	{"obscuren", encryptObscuren, decryptObscuren},
 	{"bitcoin", encryptBitcoin, decryptBitcoin},
 	{"sghcrypto", encryptSghcrypto, decryptSghcrypto},
+	{"ecies_go", encryptEciesgo, decryptEciesgo},
 }
 
 // TestEncryptDecrypt performs several tests.
@@ -206,8 +209,23 @@ func decryptSghcrypto(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
 	return sghcrypto.EciesDecrypt(data, privKeyBytes)
 }
 
+func encryptEciesgo(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
+	pubKeyBytes := append(pubKey.X.Bytes(), pubKey.Y.Bytes()...)
+	pub, errPub := ecies_go.NewPublicKeyFromBytes(pubKeyBytes)
+	if errPub != nil {
+		return nil, errPub
+	}
+	return ecies_go.Encrypt(pub, data)
+}
+
+func decryptEciesgo(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
+	privKeyBytes := privKey.D.Bytes()
+	priv := ecies_go.NewPrivateKeyFromBytes(privKeyBytes)
+	return ecies_go.Decrypt(priv, data)
+}
+
 func privateKeyFromPemStr(privPEM string) (*ecdsa.PrivateKey, error) {
-	me := "PrivateKeyFromPemStr"
+	me := "privateKeyFromPemStr"
 
 	block, _ := pem.Decode([]byte(privPEM))
 	if block == nil {
@@ -219,11 +237,13 @@ func privateKeyFromPemStr(privPEM string) (*ecdsa.PrivateKey, error) {
 		return nil, fmt.Errorf("%s: %v", me, err)
 	}
 
+	log.Printf("%s: is P256 secp256r1? %v", me, priv.Curve == elliptic.P256())
+
 	return priv, nil
 }
 
 func publicKeyFromPemStr(pubPEM string) (*ecdsa.PublicKey, error) {
-	me := "PublicKeyFromPemStr"
+	me := "publicKeyFromPemStr"
 
 	block, _ := pem.Decode([]byte(pubPEM))
 	if block == nil {
@@ -239,6 +259,8 @@ func publicKeyFromPemStr(pubPEM string) (*ecdsa.PublicKey, error) {
 	if !ok {
 		return nil, fmt.Errorf("%s: not an ECDSA public key", me)
 	}
+
+	log.Printf("%s: is P256 secp256r1? %v", me, p.Curve == elliptic.P256())
 
 	return p, nil
 }
