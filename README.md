@@ -1,7 +1,9 @@
 # ecies-go-test
 
+## Usage
+
 ```
-https://github.com/udhos/ecies-go-test
+git clone https://github.com/udhos/ecies-go-test
 cd ecies-go-test
 go test
 ```
