@@ -13,6 +13,7 @@ import (
 	havir "github.com/danielhavir/go-ecies/ecies"
 	ethereum "github.com/ethereum/go-ethereum/crypto/ecies"
 	bitcoin "github.com/gitzhou/bitcoin-ecies"
+	sghcrypto "github.com/nnitquan/sghcrypto/util"
 	obscuren "github.com/obscuren/ecies"
 )
 
@@ -61,6 +62,7 @@ var testTableCode = []testCode{
 	{"havir", encryptHavir, decryptHavir},
 	{"obscuren", encryptObscuren, decryptObscuren},
 	{"bitcoin", encryptBitcoin, decryptBitcoin},
+	{"sghcrypto", encryptSghcrypto, decryptSghcrypto},
 }
 
 // TestEncryptDecrypt performs several tests.
@@ -188,6 +190,20 @@ func decryptBitcoin(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
 	dataStr, err := bitcoin.DecryptMessage(string(data), privKeyBytes)
 
 	return []byte(dataStr), err
+}
+
+func encryptSghcrypto(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
+
+	pubKeyBytes := append(pubKey.X.Bytes(), pubKey.Y.Bytes()...)
+
+	return sghcrypto.EciesEncrypt(data, pubKeyBytes)
+}
+
+func decryptSghcrypto(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
+
+	privKeyBytes := privKey.D.Bytes()
+
+	return sghcrypto.EciesDecrypt(data, privKeyBytes)
 }
 
 func privateKeyFromPemStr(privPEM string) (*ecdsa.PrivateKey, error) {
