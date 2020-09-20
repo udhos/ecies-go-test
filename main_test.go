@@ -78,7 +78,7 @@ var testTableCode = []testCode{
 	{"ethereum", encryptEthereum, decryptEthereum},
 	{"secp256r1-havir", encryptHavir, decryptHavir},
 	{"obscuren", encryptObscuren, decryptObscuren},
-	{"bitcoin", encryptBitcoin, decryptBitcoin},
+	{"secp256k1-bitcoin", encryptBitcoin, decryptBitcoin},
 	{"sghcrypto", encryptSghcrypto, decryptSghcrypto},
 	{"ecp256k1-ecies_go", encryptEciesgo, decryptEciesgo},
 }
