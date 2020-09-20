@@ -111,7 +111,8 @@ func helper(t *testing.T) {
 		var publicKey *ecdsa.PublicKey
 		var errKey error
 
-		if k.curve == "secp256r1" {
+		switch {
+		case k.curve == "secp256r1":
 			privateKey, errKey = privateKeyFromPemStr(k.strPEMPriv)
 			if errKey != nil {
 				t.Errorf("could not load private key from pem: %v", errKey)
@@ -123,9 +124,7 @@ func helper(t *testing.T) {
 				t.Errorf("could not load public key from pem: %v", errKey)
 				continue
 			}
-		}
-
-		if k.curve == "secp256k1" {
+		case k.curve == "secp256k1":
 
 			priv, errPriv := secp256k1.ParsePrivateKeyPem([]byte(k.strPEMPriv))
 			if errPriv != nil {
@@ -141,9 +140,8 @@ func helper(t *testing.T) {
 
 			privateKey = priv.ToECDSA()
 			publicKey = pub.ToECDSA()
-
-			//t.Logf("key=%4s(%9s): FIXME WRITEME load keys", k.name, k.curve)
-			//continue
+		default:
+			log.Fatalf("uknown curve: %s", k.curve)
 		}
 
 		for _, txt := range testTableText {
