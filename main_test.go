@@ -79,8 +79,8 @@ var testTableCode = []testCode{
 	{"secp256r1-havir", encryptHavir, decryptHavir},
 	{"obscuren", encryptObscuren, decryptObscuren},
 	{"secp256k1-bitcoin", encryptBitcoin, decryptBitcoin},
-	{"sghcrypto", encryptSghcrypto, decryptSghcrypto},
-	{"ecp256k1-ecies_go", encryptEciesgo, decryptEciesgo},
+	{"secp256k1-sghcrypto", encryptSghcrypto, decryptSghcrypto},
+	{"secp256k1-ecies_go", encryptEciesgo, decryptEciesgo},
 }
 
 // TestEncryptDecrypt performs several tests.
