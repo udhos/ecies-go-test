@@ -226,53 +226,44 @@ func decryptHavir(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
 }
 
 func encryptObscuren(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
-
 	publicKey := obscuren.ImportECDSAPublic(pubKey)
-
 	return obscuren.Encrypt(rand.Reader, publicKey, data, nil, nil)
 }
 
 func decryptObscuren(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
-
 	privateKey := obscuren.ImportECDSA(privKey)
-
 	return privateKey.Decrypt(rand.Reader, data, nil, nil)
 }
 
+func pubKeyBytes(pubKey *ecdsa.PublicKey) []byte {
+	b := append([]byte{0x04}, pubKey.X.Bytes()...)
+	return append(b, pubKey.Y.Bytes()...)
+}
+
 func encryptBitcoin(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
-
-	pubKeyBytes := append(pubKey.X.Bytes(), pubKey.Y.Bytes()...)
-
+	pubKeyBytes := pubKeyBytes(pubKey)
 	dataStr, err := bitcoin.EncryptMessage(string(data), pubKeyBytes)
-
 	return []byte(dataStr), err
 }
 
 func decryptBitcoin(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
-
 	privKeyBytes := privKey.D.Bytes()
-
 	dataStr, err := bitcoin.DecryptMessage(string(data), privKeyBytes)
-
 	return []byte(dataStr), err
 }
 
 func encryptSghcrypto(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
-
-	pubKeyBytes := append(pubKey.X.Bytes(), pubKey.Y.Bytes()...)
-
+	pubKeyBytes := pubKeyBytes(pubKey)
 	return sghcrypto.EciesEncrypt(data, pubKeyBytes)
 }
 
 func decryptSghcrypto(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
-
 	privKeyBytes := privKey.D.Bytes()
-
 	return sghcrypto.EciesDecrypt(data, privKeyBytes)
 }
 
 func encryptEciesgo(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
-	pubKeyBytes := append(pubKey.X.Bytes(), pubKey.Y.Bytes()...)
+	pubKeyBytes := pubKeyBytes(pubKey)
 	pub, errPub := ecies_go.NewPublicKeyFromBytes(pubKeyBytes)
 	if errPub != nil {
 		return nil, errPub
