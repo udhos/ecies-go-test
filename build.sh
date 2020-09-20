@@ -19,3 +19,4 @@ build() {
 }
 
 build ./example/ecies-btc
+build ./example/ecies-kyber

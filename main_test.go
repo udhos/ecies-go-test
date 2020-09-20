@@ -13,6 +13,9 @@ import (
 
 	"github.com/udhos/ecies-go-test/secp256k1"
 
+	"go.dedis.ch/kyber/v3/group/nist"
+	"go.dedis.ch/kyber/v3/util/random"
+
 	btcec "github.com/btcsuite/btcd/btcec"
 	havir "github.com/danielhavir/go-ecies/ecies"
 	ecies_go "github.com/ecies/go"
@@ -20,6 +23,7 @@ import (
 	bitcoin "github.com/gitzhou/bitcoin-ecies"
 	sghcrypto "github.com/nnitquan/sghcrypto/util"
 	obscuren "github.com/obscuren/ecies"
+	kyber "go.dedis.ch/kyber/v3/encrypt/ecies"
 )
 
 type testKey struct {
@@ -89,6 +93,7 @@ var testTableCode = []testCode{
 	{"sghcrypto", map[string]struct{}{"secp256k1": struct{}{}}, encryptSghcrypto, decryptSghcrypto},
 	{"ecies_go", map[string]struct{}{"secp256k1": struct{}{}}, encryptEciesgo, decryptEciesgo},
 	{"btcec", map[string]struct{}{"secp256k1": struct{}{}}, encryptBtcec, decryptBtcec},
+	{"kyber", map[string]struct{}{"secp256k1": struct{}{}, "secp256r1": struct{}{}}, encryptKyber, decryptKyber},
 }
 
 // TestEncryptDecrypt performs several tests.
@@ -285,6 +290,18 @@ func encryptBtcec(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
 func decryptBtcec(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
 	priv := btcec.PrivateKey(*privKey)
 	return btcec.Decrypt(&priv, data)
+}
+
+func encryptKyber(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
+	suite := nist.NewBlakeSHA256P256()
+	public := suite.Point().Embed(pubKeyBytes(pubKey), random.New())
+	return kyber.Encrypt(suite, public, data, suite.Hash)
+}
+
+func decryptKyber(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
+	suite := nist.NewBlakeSHA256P256()
+	private := suite.Scalar().SetBytes(privKey.D.Bytes())
+	return kyber.Decrypt(suite, private, data, suite.Hash)
 }
 
 func privateKeyFromPemStr(privPEM string) (*ecdsa.PrivateKey, error) {
