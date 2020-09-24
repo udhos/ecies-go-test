@@ -33,6 +33,19 @@ type testKey struct {
 	strPEMPub  string
 }
 
+/*
+    -----BEGIN EC PUBLIC KEY-----
+    MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEv/5Q0Kj50tRkrocn9FbspEMrdltt
+    T8p6boUyWHaw+UmJBY2dZrc2CLUynQURtT0iEI+lTAN5K9jDrI+Z5aAXYw==
+    -----END EC PUBLIC KEY-----
+  PrivateKey: |
+    -----BEGIN EC PRIVATE KEY-----
+    MHcCAQEEIK3z9XNwdVxQ8CCh3gTk3kLifKlYBWpHnFGx4UeLHJ+/oAoGCCqGSM49
+    AwEHoUQDQgAEv/5Q0Kj50tRkrocn9FbspEMrdlttT8p6boUyWHaw+UmJBY2dZrc2
+    CLUynQURtT0iEI+lTAN5K9jDrI+Z5aAXYw==
+    -----END EC PRIVATE KEY-----
+
+*/
 var testTableKey = []testKey{
 	{"key1",
 		"secp256r1",
@@ -51,6 +64,22 @@ YYHXMGhMmXjX4dd8gz/VuWdVI2G4LStZ2hn0cfgzT8VdJCkRo+cynYpTOA==
 `,
 	},
 	{"key2",
+		"secp256r1",
+		`
+-----BEGIN EC PRIVATE KEY-----
+MHcCAQEEIK3z9XNwdVxQ8CCh3gTk3kLifKlYBWpHnFGx4UeLHJ+/oAoGCCqGSM49
+AwEHoUQDQgAEv/5Q0Kj50tRkrocn9FbspEMrdlttT8p6boUyWHaw+UmJBY2dZrc2
+CLUynQURtT0iEI+lTAN5K9jDrI+Z5aAXYw==
+-----END EC PRIVATE KEY-----
+	`,
+		`
+-----BEGIN EC PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEv/5Q0Kj50tRkrocn9FbspEMrdltt
+T8p6boUyWHaw+UmJBY2dZrc2CLUynQURtT0iEI+lTAN5K9jDrI+Z5aAXYw==
+-----END EC PUBLIC KEY-----
+	`,
+	},
+	{"key3",
 		"secp256k1",
 		`
 -----BEGIN EC PRIVATE KEY-----
@@ -64,6 +93,38 @@ oUQDQgAExmziEVB0icHwNAnEiFtffewTrjyiWUEF0v61Izskw1hxhr4IDb8T5v75
 MFQwDgYFK4EEAAoGBSuBBAAKA0IABMZs4hFQdInB8DQJxIhbX33sE648ollBBdL+
 tSM7JMNYcYa+CA2/E+b++fMvnZEdfXUJMVx3SZiwr1IzU9gZAQQ=
 -----END EC PUBLIC KEY-----
+`,
+	},
+	{"key4-openssl",
+		"secp256k1",
+		`
+-----BEGIN EC PRIVATE KEY-----
+MHQCAQEEIEmcxYieANXo17EjuPS0aR+owhBFqzBKcIXcQ/ReeBWPoAcGBSuBBAAK
+oUQDQgAEwzC/yMyG6gkJw2Oy237aHOY3kKU4PGt9P0sCNB4ze84IzMhrJmO7niUv
+dRf/NZvnPL7RfcKR3WJBA+bwwUMqxw==
+-----END EC PRIVATE KEY-----
+`,
+		`
+-----BEGIN PUBLIC KEY-----
+MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEwzC/yMyG6gkJw2Oy237aHOY3kKU4PGt9
+P0sCNB4ze84IzMhrJmO7niUvdRf/NZvnPL7RfcKR3WJBA+bwwUMqxw==
+-----END PUBLIC KEY-----
+`,
+	},
+	{"key5-openssl",
+		"secp256r1",
+		`
+-----BEGIN EC PRIVATE KEY-----
+MHcCAQEEIPwdUE4SO6Vx3gfy7OcdWCc9JfpJ4/8/RV4uH8ywej3joAoGCCqGSM49
+AwEHoUQDQgAEFBikUPNS5IwnXgip9BtOM2qlAo1mFTVD5XiPWHkKIxC4LEvh+P7J
+wTQCkUdgjIGZTj06G8QUxv4U0To3ypE2uA==
+-----END EC PRIVATE KEY-----
+`,
+		`
+-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEFBikUPNS5IwnXgip9BtOM2qlAo1m
+FTVD5XiPWHkKIxC4LEvh+P7JwTQCkUdgjIGZTj06G8QUxv4U0To3ypE2uA==
+-----END PUBLIC KEY-----
 `,
 	},
 }
@@ -86,8 +147,8 @@ type testCode struct {
 }
 
 var testTableCode = []testCode{
-	{"ethereum", map[string]struct{}{"secp256r1": struct{}{}}, encryptEthereum, decryptEthereum},
-	{"havir", map[string]struct{}{"secp256r1": struct{}{}}, encryptHavir, decryptHavir},
+	{"ethereum", map[string]struct{}{"secp256k1": struct{}{}, "secp256r1": struct{}{}}, encryptEthereum, decryptEthereum},
+	{"havir", map[string]struct{}{"secp256k1": struct{}{}, "secp256r1": struct{}{}}, encryptHavir, decryptHavir},
 	{"obscuren", map[string]struct{}{"secp256r1": struct{}{}}, encryptObscuren, decryptObscuren},
 	{"bitcoin", map[string]struct{}{"secp256k1": struct{}{}}, encryptBitcoin, decryptBitcoin},
 	{"sghcrypto", map[string]struct{}{"secp256k1": struct{}{}}, encryptSghcrypto, decryptSghcrypto},
@@ -128,13 +189,13 @@ func helper(t *testing.T) {
 
 			priv, errPriv := secp256k1.ParsePrivateKeyPem([]byte(k.strPEMPriv))
 			if errPriv != nil {
-				t.Errorf("could not load private key curve secp256k1 from pem: %v", errPriv)
+				t.Errorf("could not load private key curve secp256k1 from pem: %s: %v", k.name, errPriv)
 				continue
 			}
 
 			pub, errPub := secp256k1.ParsePublicKeyPem([]byte(k.strPEMPub))
 			if errPub != nil {
-				t.Errorf("could not load public key curve secp256k1 from pem: %v", errPub)
+				t.Errorf("could not load public key curve secp256k1 from pem: %s: %v", k.name, errPub)
 				continue
 			}
 
@@ -177,7 +238,12 @@ func helper(t *testing.T) {
 						continue
 					}
 
-					t.Logf("key=%4s(%9s) text=%5s src=%9s dst=%9s good", k.name, k.curve, txt.name, codeSrc.name, codeDst.name)
+					result := "good"
+					if codeSrc.name != codeDst.name {
+						result = "very good"
+					}
+
+					t.Logf("key=%4s(%9s) text=%5s src=%9s dst=%9s %s", k.name, k.curve, txt.name, codeSrc.name, codeDst.name, result)
 				}
 			}
 		}
@@ -203,7 +269,8 @@ func encryptHavir(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
 
 	curve := pubKey.Curve
 	if curve != elliptic.P256() {
-		return nil, fmt.Errorf("only P256 is supported")
+		log.Print("encryptHavir: only P256 is supported")
+		//return nil, fmt.Errorf("only P256 is supported")
 	}
 
 	publicKey := havir.PublicKey{X: pubKey.X, Y: pubKey.Y, Curve: curve}
@@ -215,7 +282,8 @@ func decryptHavir(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
 
 	curve := privKey.Curve
 	if curve != elliptic.P256() {
-		return nil, fmt.Errorf("only P256 is supported")
+		log.Print("decryptHavir: only P256 is supported")
+		//return nil, fmt.Errorf("only P256 is supported")
 	}
 
 	pubKey := havir.PublicKey{Curve: curve}

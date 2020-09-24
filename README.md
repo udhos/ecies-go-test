@@ -20,3 +20,9 @@ git clone https://github.com/udhos/ecies-go-test
 cd ecies-go-test
 go test
 ```
+## Recipe for EC keys
+
+```
+openssl ecparam -name secp256k1 -genkey -noout -out private.pem
+openssl ec -in private.pem -pubout -out public.pem
+```
