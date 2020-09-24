@@ -17,12 +17,12 @@ import (
 	"go.dedis.ch/kyber/v3/util/random"
 
 	btcec "github.com/btcsuite/btcd/btcec"
-	havir "github.com/danielhavir/go-ecies/ecies"
 	ecies_go "github.com/ecies/go"
 	ethereum "github.com/ethereum/go-ethereum/crypto/ecies"
 	bitcoin "github.com/gitzhou/bitcoin-ecies"
 	sghcrypto "github.com/nnitquan/sghcrypto/util"
 	obscuren "github.com/obscuren/ecies"
+	havir "github.com/udhos/go-ecies/ecies" // "github.com/danielhavir/go-ecies" with modules support
 	kyber "go.dedis.ch/kyber/v3/encrypt/ecies"
 )
 
