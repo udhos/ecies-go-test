@@ -15,6 +15,7 @@ import (
 var (
 	//oidNamedCurveSecP256r1 = asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7}
 	oidNamedCurveSecP256k1 = asn1.ObjectIdentifier{1, 3, 132, 0, 10}
+	oidECPublicKey         = asn1.ObjectIdentifier{1, 2, 840, 10045, 2, 1} // openssl secp256k1 public
 )
 
 // ParsePrivateKeyPem loads private key with curve secp256k1 from PEM.
@@ -125,8 +126,9 @@ func parseECPublicKey(derBytes []byte) (*btcec.PublicKey, error) {
 	if len(rest) != 0 {
 		return nil, errors.New("x509: trailing data after ASN.1 of public-key")
 	}
-	if !pki.Algorithm.Algorithm.Equal(oidNamedCurveSecP256k1) {
-		return nil, errors.New("x509: unknown public key algorithm")
+	algo := pki.Algorithm.Algorithm
+	if !algo.Equal(oidNamedCurveSecP256k1) && !algo.Equal(oidECPublicKey) {
+		return nil, fmt.Errorf("x509: unknown public key algorithm: %v", algo)
 	}
 
 	return parsePublicKey(&pki)
