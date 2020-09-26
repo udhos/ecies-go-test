@@ -8,6 +8,18 @@ https://golang.org/pkg/crypto/elliptic/#P256
 
 ## Usage
 
+### test suite
+
+```
+python3 -m pip install eciespy ;# install eciespy cli
+
+git clone https://github.com/udhos/ecies-go-test
+cd ecies-go-test
+go test
+```
+
+### ecies-btc
+
 ```
 git clone https://github.com/udhos/ecies-go-test
 cd ecies-go-test
@@ -15,20 +27,9 @@ go install ./example/ecies-btc
 ecies-btc
 ```
 
-```
-git clone https://github.com/udhos/ecies-go-test
-cd ecies-go-test
-go test
-```
 ## Recipe for EC keys
 
 ```
 openssl ecparam -name secp256k1 -genkey -noout -out private.pem
 openssl ec -in private.pem -pubout -out public.pem
-```
-
-## Install eciespy
-
-```
-python3 -m pip install eciespy
 ```
