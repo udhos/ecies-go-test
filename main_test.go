@@ -8,13 +8,14 @@ import (
 	"crypto/x509"
 	"encoding/hex"
 	"encoding/pem"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"math/big"
 	"net/http"
+	"net/url"
 	"os/exec"
+	"strings"
 	"testing"
 
 	"github.com/udhos/ecies-go-test/secp256k1"
@@ -425,17 +426,15 @@ func decryptEciespy(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
 
 func encryptEciespyApi(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
 
-	pubBytes := pubKeyBytes(pubKey)
-	keyHexBuf := make([]byte, hex.EncodedLen(len(pubBytes)))
-	hex.Encode(keyHexBuf, pubBytes)
+	form := url.Values{}
+	form.Set("data", string(data))
+	form.Set("pub", hex.EncodeToString(pubKeyBytes(pubKey)))
 
-	url := "https://eciespy.herokuapp.com/"
+	bodyStr := form.Encode()
+	log.Printf("encryptEciespyApi: request body: [%s]", bodyStr)
+	body := strings.NewReader(bodyStr)
 
-	body := "data=" + string(data) + "&pub=" + string(keyHexBuf)
-
-	log.Printf("encryptEciespyApi: request body: [%s]", body)
-
-	req, errReq := http.NewRequest("POST", url, bytes.NewBufferString(body))
+	req, errReq := http.NewRequest("POST", "https://eciespy.herokuapp.com/", body)
 	if errReq != nil {
 		return nil, errReq
 	}
@@ -473,7 +472,50 @@ func encryptEciespyApi(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
 }
 
 func decryptEciespyApi(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
-	return nil, errors.New("WRITEME")
+
+	form := url.Values{}
+	form.Set("data", hex.EncodeToString(data))
+	form.Set("prv", hex.EncodeToString(privKey.D.Bytes()))
+
+	bodyStr := form.Encode()
+	log.Printf("decryptEciespyApi: request body: [%s]", bodyStr)
+	body := strings.NewReader(bodyStr)
+
+	req, errReq := http.NewRequest("POST", "https://eciespy.herokuapp.com/", body)
+	if errReq != nil {
+		return nil, errReq
+	}
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("cache-control", "no-cache")
+
+	client := http.DefaultClient
+
+	resp, errDo := client.Do(req)
+	if errDo != nil {
+		return nil, errDo
+	}
+
+	defer resp.Body.Close()
+
+	respBody, errBody := ioutil.ReadAll(resp.Body)
+	if errBody != nil {
+		return nil, errBody
+	}
+
+	if resp.StatusCode != 200 {
+		log.Printf("decryptEciespyApi: bad http status: %d", resp.StatusCode)
+	}
+
+	log.Printf("decryptEciespyApi: response body: [%s]", string(respBody))
+
+	dataClear := make([]byte, hex.DecodedLen(len(respBody)))
+	_, errHex := hex.Decode(dataClear, respBody)
+	if errHex != nil {
+		return nil, errHex
+	}
+
+	return dataClear, nil
 }
 
 func privateKeyFromPemStr(privPEM string) (*ecdsa.PrivateKey, error) {
