@@ -230,13 +230,13 @@ func helper(t *testing.T) {
 					decryptedStr := string(decrypted)
 
 					if txt.text != decryptedStr {
-						t.Errorf("key=%4s(%9s) text=%5s src=%11s dst=%11s FAIL wanted=[%s] got=[%s]", k.name, k.curve, txt.name, codeSrc.name, codeDst.name, txt.text, decryptedStr)
+						t.Errorf("key=%4s(%9s) text=%5s src=%11s dst=%11s FAIL  wanted=[%s] got=[%s]", k.name, k.curve, txt.name, codeSrc.name, codeDst.name, txt.text, decryptedStr)
 						continue
 					}
 
-					result := "     good"
+					result := "good "
 					if codeSrc.name != codeDst.name {
-						result = "very good"
+						result = "good!"
 					}
 
 					t.Logf("key=%4s(%9s) text=%5s src=%11s dst=%11s %s wanted=[%s] got=[%s]", k.name, k.curve, txt.name, codeSrc.name, codeDst.name, result, txt.text, decryptedStr)
