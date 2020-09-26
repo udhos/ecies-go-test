@@ -234,12 +234,12 @@ func helper(t *testing.T) {
 						continue
 					}
 
-					result := "good"
+					result := "     good"
 					if codeSrc.name != codeDst.name {
 						result = "very good"
 					}
 
-					t.Logf("key=%4s(%9s) text=%5s src=%11s dst=%11s %s", k.name, k.curve, txt.name, codeSrc.name, codeDst.name, result)
+					t.Logf("key=%4s(%9s) text=%5s src=%11s dst=%11s %s wanted=[%s] got=[%s]", k.name, k.curve, txt.name, codeSrc.name, codeDst.name, result, txt.text, decryptedStr)
 				}
 			}
 		}
@@ -509,13 +509,7 @@ func decryptEciespyApi(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
 
 	log.Printf("decryptEciespyApi: response body: [%s]", string(respBody))
 
-	dataClear := make([]byte, hex.DecodedLen(len(respBody)))
-	_, errHex := hex.Decode(dataClear, respBody)
-	if errHex != nil {
-		return nil, errHex
-	}
-
-	return dataClear, nil
+	return respBody, nil
 }
 
 func privateKeyFromPemStr(privPEM string) (*ecdsa.PrivateKey, error) {
