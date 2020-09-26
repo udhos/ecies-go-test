@@ -26,3 +26,9 @@ go test
 openssl ecparam -name secp256k1 -genkey -noout -out private.pem
 openssl ec -in private.pem -pubout -out public.pem
 ```
+
+## Install eciespy
+
+```
+python3 -m pip install eciespy
+```

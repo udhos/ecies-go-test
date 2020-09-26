@@ -1,14 +1,18 @@
 package main
 
 import (
+	"bytes"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/x509"
+	"encoding/hex"
 	"encoding/pem"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/big"
+	"os/exec"
 	"testing"
 
 	"github.com/udhos/ecies-go-test/secp256k1"
@@ -33,19 +37,6 @@ type testKey struct {
 	strPEMPub  string
 }
 
-/*
-    -----BEGIN EC PUBLIC KEY-----
-    MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEv/5Q0Kj50tRkrocn9FbspEMrdltt
-    T8p6boUyWHaw+UmJBY2dZrc2CLUynQURtT0iEI+lTAN5K9jDrI+Z5aAXYw==
-    -----END EC PUBLIC KEY-----
-  PrivateKey: |
-    -----BEGIN EC PRIVATE KEY-----
-    MHcCAQEEIK3z9XNwdVxQ8CCh3gTk3kLifKlYBWpHnFGx4UeLHJ+/oAoGCCqGSM49
-    AwEHoUQDQgAEv/5Q0Kj50tRkrocn9FbspEMrdlttT8p6boUyWHaw+UmJBY2dZrc2
-    CLUynQURtT0iEI+lTAN5K9jDrI+Z5aAXYw==
-    -----END EC PRIVATE KEY-----
-
-*/
 var testTableKey = []testKey{
 	{"key1",
 		"secp256r1",
@@ -136,7 +127,7 @@ type testText struct {
 
 var testTableText = []testText{
 	{"text1", "abc123"},
-	//{"text1", "1234567890abc"},
+	//{"text2", "1234567890abc"},
 }
 
 type testCode struct {
@@ -155,6 +146,7 @@ var testTableCode = []testCode{
 	{"ecies_go", map[string]struct{}{"secp256k1": struct{}{}}, encryptEciesgo, decryptEciesgo},
 	{"btcec", map[string]struct{}{"secp256k1": struct{}{}}, encryptBtcec, decryptBtcec},
 	{"kyber", map[string]struct{}{"secp256k1": struct{}{}, "secp256r1": struct{}{}}, encryptKyber, decryptKyber},
+	{"eciespy", map[string]struct{}{"secp256k1": struct{}{}}, encryptEciespy, decryptEciespy},
 }
 
 // TestEncryptDecrypt performs several tests.
@@ -368,6 +360,64 @@ func decryptKyber(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
 	suite := nist.NewBlakeSHA256P256()
 	private := suite.Scalar().SetBytes(privKey.D.Bytes())
 	return kyber.Decrypt(suite, private, data, suite.Hash)
+}
+
+func encryptEciespy(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
+
+	//eciespy -e -k KEY
+
+	pubBytes := pubKeyBytes(pubKey)
+	keyBuf := make([]byte, hex.EncodedLen(len(pubBytes)))
+	hex.Encode(keyBuf, pubBytes)
+
+	filePubHex := "eciespy.pubkey"
+	if errWrite := ioutil.WriteFile(filePubHex, keyBuf, 0640); errWrite != nil {
+		return nil, errWrite
+	}
+
+	args := []string{"-e", "-k", filePubHex}
+
+	cmdEncrypt := exec.Command("eciespy", args...)
+
+	out := bytes.Buffer{}
+
+	cmdEncrypt.Stdin = bytes.NewBuffer(data)
+	cmdEncrypt.Stdout = &out
+
+	if errEncrypt := cmdEncrypt.Run(); errEncrypt != nil {
+		return nil, errEncrypt
+	}
+
+	return out.Bytes(), nil
+}
+
+func decryptEciespy(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
+
+	//eciespy -d -k KEY
+
+	privKeyBytes := privKey.D.Bytes()
+	keyBuf := make([]byte, hex.EncodedLen(len(privKeyBytes)))
+	hex.Encode(keyBuf, privKeyBytes)
+
+	filePrivHex := "eciespy.privkey"
+	if errWrite := ioutil.WriteFile(filePrivHex, keyBuf, 0640); errWrite != nil {
+		return nil, errWrite
+	}
+
+	args := []string{"-d", "-k", filePrivHex}
+
+	cmdDecrypt := exec.Command("eciespy", args...)
+
+	out := bytes.Buffer{}
+
+	cmdDecrypt.Stdin = bytes.NewBuffer(data)
+	cmdDecrypt.Stdout = &out
+
+	if errDecrypt := cmdDecrypt.Run(); errDecrypt != nil {
+		return nil, errDecrypt
+	}
+
+	return out.Bytes(), nil
 }
 
 func privateKeyFromPemStr(privPEM string) (*ecdsa.PrivateKey, error) {
