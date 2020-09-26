@@ -8,10 +8,12 @@ import (
 	"crypto/x509"
 	"encoding/hex"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"math/big"
+	"net/http"
 	"os/exec"
 	"testing"
 
@@ -147,6 +149,7 @@ var testTableCode = []testCode{
 	{"btcec", map[string]struct{}{"secp256k1": struct{}{}}, encryptBtcec, decryptBtcec},
 	{"kyber", map[string]struct{}{"secp256k1": struct{}{}, "secp256r1": struct{}{}}, encryptKyber, decryptKyber},
 	{"eciespy", map[string]struct{}{"secp256k1": struct{}{}}, encryptEciespy, decryptEciespy},
+	{"eciespy_api", map[string]struct{}{"secp256k1": struct{}{}}, encryptEciespyApi, decryptEciespyApi},
 }
 
 // TestEncryptDecrypt performs several tests.
@@ -213,20 +216,20 @@ func helper(t *testing.T) {
 
 					encrypted, errEncrypt := codeSrc.encrypt(publicKey, []byte(txt.text))
 					if errEncrypt != nil {
-						t.Errorf("key=%4s(%9s) text=%5s src=%9s dst=%9s error encrypt: %v", k.name, k.curve, txt.name, codeSrc.name, codeDst.name, errEncrypt)
+						t.Errorf("key=%4s(%9s) text=%5s src=%11s dst=%11s error encrypt: %v", k.name, k.curve, txt.name, codeSrc.name, codeDst.name, errEncrypt)
 						continue
 					}
 
 					decrypted, errDecrypt := codeDst.decrypt(privateKey, encrypted)
 					if errEncrypt != nil {
-						t.Errorf("key=%4s(%9s) text=%5s src=%9s dst=%9s error decrypt: %v", k.name, k.curve, txt.name, codeSrc.name, codeDst.name, errDecrypt)
+						t.Errorf("key=%4s(%9s) text=%5s src=%11s dst=%11s error decrypt: %v", k.name, k.curve, txt.name, codeSrc.name, codeDst.name, errDecrypt)
 						continue
 					}
 
 					decryptedStr := string(decrypted)
 
 					if txt.text != decryptedStr {
-						t.Errorf("key=%4s(%9s) text=%5s src=%9s dst=%9s FAIL wanted=[%s] got=[%s]", k.name, k.curve, txt.name, codeSrc.name, codeDst.name, txt.text, decryptedStr)
+						t.Errorf("key=%4s(%9s) text=%5s src=%11s dst=%11s FAIL wanted=[%s] got=[%s]", k.name, k.curve, txt.name, codeSrc.name, codeDst.name, txt.text, decryptedStr)
 						continue
 					}
 
@@ -235,7 +238,7 @@ func helper(t *testing.T) {
 						result = "very good"
 					}
 
-					t.Logf("key=%4s(%9s) text=%5s src=%9s dst=%9s %s", k.name, k.curve, txt.name, codeSrc.name, codeDst.name, result)
+					t.Logf("key=%4s(%9s) text=%5s src=%11s dst=%11s %s", k.name, k.curve, txt.name, codeSrc.name, codeDst.name, result)
 				}
 			}
 		}
@@ -418,6 +421,59 @@ func decryptEciespy(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
 	}
 
 	return out.Bytes(), nil
+}
+
+func encryptEciespyApi(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
+
+	pubBytes := pubKeyBytes(pubKey)
+	keyHexBuf := make([]byte, hex.EncodedLen(len(pubBytes)))
+	hex.Encode(keyHexBuf, pubBytes)
+
+	url := "https://eciespy.herokuapp.com/"
+
+	body := "data=" + string(data) + "&pub=" + string(keyHexBuf)
+
+	log.Printf("encryptEciespyApi: request body: [%s]", body)
+
+	req, errReq := http.NewRequest("POST", url, bytes.NewBufferString(body))
+	if errReq != nil {
+		return nil, errReq
+	}
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("cache-control", "no-cache")
+
+	client := http.DefaultClient
+
+	resp, errDo := client.Do(req)
+	if errDo != nil {
+		return nil, errDo
+	}
+
+	defer resp.Body.Close()
+
+	respBody, errBody := ioutil.ReadAll(resp.Body)
+	if errBody != nil {
+		return nil, errBody
+	}
+
+	if resp.StatusCode != 200 {
+		log.Printf("encryptEciespyApi: bad http status: %d", resp.StatusCode)
+	}
+
+	log.Printf("encryptEciespyApi: response body: [%s]", string(respBody))
+
+	dataEncrypted := make([]byte, hex.DecodedLen(len(respBody)))
+	_, errHex := hex.Decode(dataEncrypted, respBody)
+	if errHex != nil {
+		return nil, errHex
+	}
+
+	return dataEncrypted, nil
+}
+
+func decryptEciespyApi(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
+	return nil, errors.New("WRITEME")
 }
 
 func privateKeyFromPemStr(privPEM string) (*ecdsa.PrivateKey, error) {
