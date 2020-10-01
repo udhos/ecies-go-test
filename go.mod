@@ -14,5 +14,6 @@ require (
 	github.com/obscuren/ecies v0.0.0-20150213224233-7c0f4a9b18d9
 	github.com/udhos/go-ecies v0.0.0-20200924013448-bdc61070c903
 	go.dedis.ch/kyber/v3 v3.0.13
+	golang.org/x/crypto v0.0.0-20200930160638-afb6bcd081ae // indirect
 	golang.org/x/sys v0.0.0-20200918174421-af09f7315aff // indirect
 )
