@@ -67,13 +67,13 @@ MHcCAQEEIK3z9XNwdVxQ8CCh3gTk3kLifKlYBWpHnFGx4UeLHJ+/oAoGCCqGSM49
 AwEHoUQDQgAEv/5Q0Kj50tRkrocn9FbspEMrdlttT8p6boUyWHaw+UmJBY2dZrc2
 CLUynQURtT0iEI+lTAN5K9jDrI+Z5aAXYw==
 -----END EC PRIVATE KEY-----
-	`,
+`,
 		`
 -----BEGIN EC PUBLIC KEY-----
 MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEv/5Q0Kj50tRkrocn9FbspEMrdltt
 T8p6boUyWHaw+UmJBY2dZrc2CLUynQURtT0iEI+lTAN5K9jDrI+Z5aAXYw==
 -----END EC PUBLIC KEY-----
-	`,
+`,
 	},
 	{"key3",
 		"secp256k1",
@@ -437,7 +437,15 @@ func encryptEciespy(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
 		return nil, errEncrypt
 	}
 
-	return out.Bytes(), nil
+	encryptedBytesHex := out.Bytes()
+
+	dataEncrypted := make([]byte, hex.DecodedLen(len(encryptedBytesHex)))
+	_, errHex := hex.Decode(dataEncrypted, encryptedBytesHex)
+	if errHex != nil {
+		return nil, errHex
+	}
+
+	return dataEncrypted, nil
 }
 
 func decryptEciespy(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
@@ -459,7 +467,10 @@ func decryptEciespy(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
 
 	out := bytes.Buffer{}
 
-	cmdDecrypt.Stdin = bytes.NewBuffer(data)
+	dataHex := make([]byte, hex.EncodedLen(len(data)))
+	hex.Encode(dataHex, data)
+
+	cmdDecrypt.Stdin = bytes.NewBuffer(dataHex)
 	cmdDecrypt.Stdout = &out
 
 	if errDecrypt := cmdDecrypt.Run(); errDecrypt != nil {
