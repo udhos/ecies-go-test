@@ -378,7 +378,7 @@ var salt = []byte("--salt--")
 func init() {
 	p, errNewH := keyset.NewHandle(hybrid.ECIESHKDFAES128CTRHMACSHA256KeyTemplate())
 	if errNewH != nil {
-		panic("init ketset.NewHandle")
+		panic("init keyset.NewHandle")
 	}
 	priv = p
 }
