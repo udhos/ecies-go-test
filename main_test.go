@@ -20,12 +20,15 @@ import (
 
 	"github.com/udhos/ecies-go-test/secp256k1"
 
+	"github.com/google/tink/go/hybrid"
+	"github.com/google/tink/go/keyset"
 	"go.dedis.ch/kyber/v3/group/nist"
 
 	btcec "github.com/btcsuite/btcd/btcec"
 	ecies_go "github.com/ecies/go/v2"
 	ethereum "github.com/ethereum/go-ethereum/crypto/ecies"
 	bitcoin "github.com/gitzhou/bitcoin-ecies"
+	tink_hybrid "github.com/google/tink/go/hybrid"
 	sghcrypto "github.com/nnitquan/sghcrypto/util"
 	obscuren "github.com/obscuren/ecies"
 	havir "github.com/udhos/go-ecies/ecies" // "github.com/danielhavir/go-ecies" with modules support
@@ -150,6 +153,7 @@ var testTableCode = []testCode{
 	{"kyber", map[string]struct{}{"secp256r1": struct{}{}}, encryptKyber, decryptKyber},
 	{"eciespy", map[string]struct{}{"secp256k1": struct{}{}}, encryptEciespy, decryptEciespy},
 	{"eciespy_api", map[string]struct{}{"secp256k1": struct{}{}}, encryptEciespyApi, decryptEciespyApi},
+	{"tink_hybrid", map[string]struct{}{"secp256k1": struct{}{}}, encryptTinkHybrid, decryptTinkHybrid},
 }
 
 // TestEncryptDecrypt performs several tests.
@@ -366,6 +370,45 @@ func decryptKyber(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
 	suite := nist.NewBlakeSHA256P256()
 	private := suite.Scalar().SetBytes(privKey.D.Bytes())
 	return kyber.Decrypt(suite, private, data, suite.Hash)
+}
+
+var priv *keyset.Handle
+var salt = []byte("--salt--")
+
+func init() {
+	p, errNewH := keyset.NewHandle(hybrid.ECIESHKDFAES128CTRHMACSHA256KeyTemplate())
+	if errNewH != nil {
+		panic("init ketset.NewHandle")
+	}
+	priv = p
+}
+
+func encryptTinkHybrid(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
+	pub, errPub := priv.Public()
+	if errPub != nil {
+		return nil, errPub
+	}
+	he, errNewEnc := tink_hybrid.NewHybridEncrypt(pub)
+	if errNewEnc != nil {
+		return nil, errNewEnc
+	}
+	cipher, errEnc := he.Encrypt(data, salt)
+	if errEnc != nil {
+		return nil, errEnc
+	}
+	return cipher, nil
+}
+
+func decryptTinkHybrid(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
+	hd, errNewDec := hybrid.NewHybridDecrypt(priv)
+	if errNewDec != nil {
+		return nil, errNewDec
+	}
+	plain, errDec := hd.Decrypt(data, salt)
+	if errDec != nil {
+		return nil, errDec
+	}
+	return plain, nil
 }
 
 func encryptEciespy(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
