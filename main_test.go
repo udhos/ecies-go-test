@@ -23,7 +23,7 @@ import (
 	"go.dedis.ch/kyber/v3/group/nist"
 
 	btcec "github.com/btcsuite/btcd/btcec"
-	ecies_go "github.com/ecies/go"
+	ecies_go "github.com/ecies/go/v2"
 	ethereum "github.com/ethereum/go-ethereum/crypto/ecies"
 	bitcoin "github.com/gitzhou/bitcoin-ecies"
 	sghcrypto "github.com/nnitquan/sghcrypto/util"
