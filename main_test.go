@@ -384,7 +384,7 @@ func init() {
 }
 
 func encryptTinkHybrid(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
-	pub, errPub := priv.Public()
+	pub, errPub := priv.Public() // FIXME use pubKey *ecdsa.PublicKey
 	if errPub != nil {
 		return nil, errPub
 	}
@@ -400,7 +400,7 @@ func encryptTinkHybrid(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
 }
 
 func decryptTinkHybrid(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
-	hd, errNewDec := hybrid.NewHybridDecrypt(priv)
+	hd, errNewDec := hybrid.NewHybridDecrypt(priv) // FIXME use privKey *ecdsa.PrivateKey
 	if errNewDec != nil {
 		return nil, errNewDec
 	}
