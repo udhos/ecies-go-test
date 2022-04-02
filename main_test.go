@@ -29,6 +29,7 @@ import (
 	ethereum "github.com/ethereum/go-ethereum/crypto/ecies"
 	bitcoin "github.com/gitzhou/bitcoin-ecies"
 	tink_hybrid "github.com/google/tink/go/hybrid"
+	jafgoecies "github.com/kubasiemion/jafgoecies/ecies"
 	sghcrypto "github.com/nnitquan/sghcrypto/util"
 	obscuren "github.com/obscuren/ecies"
 	havir "github.com/udhos/go-ecies/ecies" // "github.com/danielhavir/go-ecies" with modules support
@@ -154,6 +155,8 @@ var testTableCode = []testCode{
 	{"eciespy", map[string]struct{}{"secp256k1": struct{}{}}, encryptEciespy, decryptEciespy},
 	{"eciespy_api", map[string]struct{}{"secp256k1": struct{}{}}, encryptEciespyApi, decryptEciespyApi},
 	{"tink_hybrid", map[string]struct{}{"secp256k1": struct{}{}}, encryptTinkHybrid, decryptTinkHybrid},
+	{"jafgoecies_t", map[string]struct{}{"secp256k1": struct{}{}}, encryptJafgoeciesTrue, decryptJafgoeciesTrue},
+	{"jafgoecies_f", map[string]struct{}{"secp256k1": struct{}{}}, encryptJafgoeciesFalse, decryptJafgoeciesFalse},
 }
 
 // TestEncryptDecrypt performs several tests.
@@ -220,20 +223,20 @@ func helper(t *testing.T) {
 
 					encrypted, errEncrypt := codeSrc.encrypt(publicKey, []byte(txt.text))
 					if errEncrypt != nil {
-						t.Errorf("key=%4s(%9s) text=%5s src=%11s dst=%11s error encrypt: %v", k.name, k.curve, txt.name, codeSrc.name, codeDst.name, errEncrypt)
+						t.Errorf("key=%4s(%9s) text=%5s src=%12s dst=%12s error encrypt: %v", k.name, k.curve, txt.name, codeSrc.name, codeDst.name, errEncrypt)
 						continue
 					}
 
 					decrypted, errDecrypt := codeDst.decrypt(privateKey, encrypted)
 					if errEncrypt != nil {
-						t.Errorf("key=%4s(%9s) text=%5s src=%11s dst=%11s error decrypt: %v", k.name, k.curve, txt.name, codeSrc.name, codeDst.name, errDecrypt)
+						t.Errorf("key=%4s(%9s) text=%5s src=%12s dst=%12s error decrypt: %v", k.name, k.curve, txt.name, codeSrc.name, codeDst.name, errDecrypt)
 						continue
 					}
 
 					decryptedStr := string(decrypted)
 
 					if txt.text != decryptedStr {
-						t.Errorf("key=%4s(%9s) text=%5s src=%11s dst=%11s FAIL  wanted=[%s] got=[%s]", k.name, k.curve, txt.name, codeSrc.name, codeDst.name, txt.text, decryptedStr)
+						t.Errorf("key=%4s(%9s) text=%5s src=%12s dst=%12s FAIL  wanted=[%s] got=[%s]", k.name, k.curve, txt.name, codeSrc.name, codeDst.name, txt.text, decryptedStr)
 						continue
 					}
 
@@ -242,7 +245,7 @@ func helper(t *testing.T) {
 						result = "good!"
 					}
 
-					t.Logf("key=%4s(%9s) text=%5s src=%11s dst=%11s %s wanted=[%s] got=[%s]", k.name, k.curve, txt.name, codeSrc.name, codeDst.name, result, txt.text, decryptedStr)
+					t.Logf("key=%4s(%9s) text=%5s src=%12s dst=%12s %s wanted=[%s] got=[%s]", k.name, k.curve, txt.name, codeSrc.name, codeDst.name, result, txt.text, decryptedStr)
 				}
 			}
 		}
@@ -355,6 +358,26 @@ func encryptBtcec(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
 func decryptBtcec(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
 	priv := btcec.PrivateKey(*privKey)
 	return btcec.Decrypt(&priv, data)
+}
+
+func encryptJafgoeciesTrue(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
+	pub := btcec.PublicKey(*pubKey)
+	return jafgoecies.ECEncryptPub(&pub, data, true)
+}
+
+func decryptJafgoeciesTrue(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
+	priv := btcec.PrivateKey(*privKey)
+	return jafgoecies.ECDecryptPriv(&priv, data, true)
+}
+
+func encryptJafgoeciesFalse(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
+	pub := btcec.PublicKey(*pubKey)
+	return jafgoecies.ECEncryptPub(&pub, data, false)
+}
+
+func decryptJafgoeciesFalse(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
+	priv := btcec.PrivateKey(*privKey)
+	return jafgoecies.ECDecryptPriv(&priv, data, false)
 }
 
 func encryptKyber(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
