@@ -229,7 +229,7 @@ func helper(t *testing.T) {
 					}
 
 					decrypted, errDecrypt := codeDst.decrypt(privateKey, encrypted)
-					if errEncrypt != nil {
+					if errDecrypt != nil {
 						t.Errorf("key=%4s(%9s) text=%5s src=%12s dst=%12s error decrypt: %v", k.name, k.curve, txt.name, codeSrc.name, codeDst.name, errDecrypt)
 						continue
 					}
