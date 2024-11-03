@@ -1,3 +1,4 @@
+// Package main implements the test.
 package main
 
 import "log"

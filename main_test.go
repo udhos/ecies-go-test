@@ -9,11 +9,12 @@ import (
 	"encoding/hex"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"math/big"
 	"net/http"
 	"net/url"
+	"os"
 	"os/exec"
 	"strings"
 	"testing"
@@ -144,19 +145,19 @@ type testCode struct {
 }
 
 var testTableCode = []testCode{
-	{"ethereum", map[string]struct{}{"secp256k1": struct{}{}, "secp256r1": struct{}{}}, encryptEthereum, decryptEthereum},
-	{"havir", map[string]struct{}{"secp256k1": struct{}{}, "secp256r1": struct{}{}}, encryptHavir, decryptHavir},
-	{"obscuren", map[string]struct{}{"secp256r1": struct{}{}}, encryptObscuren, decryptObscuren},
-	{"bitcoin", map[string]struct{}{"secp256k1": struct{}{}}, encryptBitcoin, decryptBitcoin},
-	{"sghcrypto", map[string]struct{}{"secp256k1": struct{}{}}, encryptSghcrypto, decryptSghcrypto},
-	{"ecies_go", map[string]struct{}{"secp256k1": struct{}{}}, encryptEciesgo, decryptEciesgo},
-	{"btcec", map[string]struct{}{"secp256k1": struct{}{}}, encryptBtcec, decryptBtcec},
-	{"kyber", map[string]struct{}{"secp256r1": struct{}{}}, encryptKyber, decryptKyber},
-	{"eciespy", map[string]struct{}{"secp256k1": struct{}{}}, encryptEciespy, decryptEciespy},
-	{"eciespy_api", map[string]struct{}{"secp256k1": struct{}{}}, encryptEciespyApi, decryptEciespyApi},
-	{"tink_hybrid", map[string]struct{}{"secp256k1": struct{}{}}, encryptTinkHybrid, decryptTinkHybrid},
-	{"jafgoecies_t", map[string]struct{}{"secp256k1": struct{}{}}, encryptJafgoeciesTrue, decryptJafgoeciesTrue},
-	{"jafgoecies_f", map[string]struct{}{"secp256k1": struct{}{}}, encryptJafgoeciesFalse, decryptJafgoeciesFalse},
+	{"ethereum", map[string]struct{}{"secp256k1": {}, "secp256r1": {}}, encryptEthereum, decryptEthereum},
+	{"havir", map[string]struct{}{"secp256k1": {}, "secp256r1": {}}, encryptHavir, decryptHavir},
+	{"obscuren", map[string]struct{}{"secp256r1": {}}, encryptObscuren, decryptObscuren},
+	{"bitcoin", map[string]struct{}{"secp256k1": {}}, encryptBitcoin, decryptBitcoin},
+	{"sghcrypto", map[string]struct{}{"secp256k1": {}}, encryptSghcrypto, decryptSghcrypto},
+	{"ecies_go", map[string]struct{}{"secp256k1": {}}, encryptEciesgo, decryptEciesgo},
+	{"btcec", map[string]struct{}{"secp256k1": {}}, encryptBtcec, decryptBtcec},
+	{"kyber", map[string]struct{}{"secp256r1": {}}, encryptKyber, decryptKyber},
+	{"eciespy", map[string]struct{}{"secp256k1": {}}, encryptEciespy, decryptEciespy},
+	//{"eciespy_api", map[string]struct{}{"secp256k1": {}}, encryptEciespyAPI, decryptEciespyAPI},
+	{"tink_hybrid", map[string]struct{}{"secp256k1": {}}, encryptTinkHybrid, decryptTinkHybrid},
+	{"jafgoecies_t", map[string]struct{}{"secp256k1": {}}, encryptJafgoeciesTrue, decryptJafgoeciesTrue},
+	{"jafgoecies_f", map[string]struct{}{"secp256k1": {}}, encryptJafgoeciesFalse, decryptJafgoeciesFalse},
 }
 
 // TestEncryptDecrypt performs several tests.
@@ -406,7 +407,7 @@ func init() {
 	priv = p
 }
 
-func encryptTinkHybrid(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
+func encryptTinkHybrid(_ /*pubKey*/ *ecdsa.PublicKey, data []byte) ([]byte, error) {
 	pub, errPub := priv.Public() // FIXME use pubKey *ecdsa.PublicKey
 	if errPub != nil {
 		return nil, errPub
@@ -422,7 +423,7 @@ func encryptTinkHybrid(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
 	return cipher, nil
 }
 
-func decryptTinkHybrid(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
+func decryptTinkHybrid(_ /*privKey*/ *ecdsa.PrivateKey, data []byte) ([]byte, error) {
 	hd, errNewDec := hybrid.NewHybridDecrypt(priv) // FIXME use privKey *ecdsa.PrivateKey
 	if errNewDec != nil {
 		return nil, errNewDec
@@ -443,7 +444,7 @@ func encryptEciespy(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
 	hex.Encode(keyBuf, pubBytes)
 
 	filePubHex := "eciespy.pubkey"
-	if errWrite := ioutil.WriteFile(filePubHex, keyBuf, 0640); errWrite != nil {
+	if errWrite := os.WriteFile(filePubHex, keyBuf, 0640); errWrite != nil {
 		return nil, errWrite
 	}
 
@@ -480,7 +481,7 @@ func decryptEciespy(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
 	hex.Encode(keyBuf, privKeyBytes)
 
 	filePrivHex := "eciespy.privkey"
-	if errWrite := ioutil.WriteFile(filePrivHex, keyBuf, 0640); errWrite != nil {
+	if errWrite := os.WriteFile(filePrivHex, keyBuf, 0640); errWrite != nil {
 		return nil, errWrite
 	}
 
@@ -503,7 +504,7 @@ func decryptEciespy(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
 	return out.Bytes(), nil
 }
 
-func encryptEciespyApi(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
+func encryptEciespyAPI(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
 
 	form := url.Values{}
 	form.Set("data", string(data))
@@ -530,7 +531,7 @@ func encryptEciespyApi(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
 
 	defer resp.Body.Close()
 
-	respBody, errBody := ioutil.ReadAll(resp.Body)
+	respBody, errBody := io.ReadAll(resp.Body)
 	if errBody != nil {
 		return nil, errBody
 	}
@@ -550,7 +551,7 @@ func encryptEciespyApi(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
 	return dataEncrypted, nil
 }
 
-func decryptEciespyApi(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
+func decryptEciespyAPI(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
 
 	form := url.Values{}
 	form.Set("data", hex.EncodeToString(data))
@@ -577,7 +578,7 @@ func decryptEciespyApi(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
 
 	defer resp.Body.Close()
 
-	respBody, errBody := ioutil.ReadAll(resp.Body)
+	respBody, errBody := io.ReadAll(resp.Body)
 	if errBody != nil {
 		return nil, errBody
 	}

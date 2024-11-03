@@ -1,3 +1,4 @@
+// Package main implements the tool.
 package main
 
 import (
@@ -39,9 +40,9 @@ func main() {
 		log.Fatalf("pub key mismatch")
 	}
 
-	clear := "abc123"
+	clearText := "abc123"
 
-	encrypted, errEnc := btcec.Encrypt(pubKey, []byte(clear))
+	encrypted, errEnc := btcec.Encrypt(pubKey, []byte(clearText))
 	if errEnc != nil {
 		log.Fatalf("encrypt: %v", errEnc)
 	}
@@ -53,8 +54,8 @@ func main() {
 
 	decStr := string(decrypted)
 
-	if decStr != clear {
-		log.Fatalf("wanted=[%s] got=[%s]", clear, decStr)
+	if decStr != clearText {
+		log.Fatalf("wanted=[%s] got=[%s]", clearText, decStr)
 	}
 
 	log.Printf("ok")
@@ -169,8 +170,10 @@ func exportPublicKeyAsPem(pub *btcec.PublicKey) ([]byte, error) {
 
 // ecPrivateKey reflects an ASN.1 Elliptic Curve Private Key Structure.
 // References:
-//   RFC 5915
-//   SEC1 - http://www.secg.org/sec1-v2.pdf
+//
+//	RFC 5915
+//	SEC1 - http://www.secg.org/sec1-v2.pdf
+//
 // Per RFC 5915 the NamedCurveOID is marked as ASN.1 OPTIONAL, however in
 // most cases it is not.
 type ecPrivateKey struct {
