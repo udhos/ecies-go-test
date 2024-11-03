@@ -30,6 +30,7 @@ import (
 	ethereum "github.com/ethereum/go-ethereum/crypto/ecies"
 	bitcoin "github.com/gitzhou/bitcoin-ecies"
 	tink_hybrid "github.com/google/tink/go/hybrid"
+	shoup "github.com/hotstar/ecies"
 	jafgoecies "github.com/kubasiemion/jafgoecies/ecies"
 	sghcrypto "github.com/nnitquan/sghcrypto/util"
 	obscuren "github.com/obscuren/ecies"
@@ -145,6 +146,7 @@ type testCode struct {
 }
 
 var testTableCode = []testCode{
+	{"shoup", map[string]struct{}{"secp256r1": {}}, encryptShoup, decryptShoup},
 	{"ethereum", map[string]struct{}{"secp256k1": {}, "secp256r1": {}}, encryptEthereum, decryptEthereum},
 	{"havir", map[string]struct{}{"secp256k1": {}, "secp256r1": {}}, encryptHavir, decryptHavir},
 	{"obscuren", map[string]struct{}{"secp256r1": {}}, encryptObscuren, decryptObscuren},
@@ -252,6 +254,27 @@ func helper(t *testing.T) {
 		}
 
 	}
+}
+
+func encryptShoup(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {
+
+	publicKey := shoup.PublicKey(*pubKey)
+
+	ecies := shoup.NewECIES()
+
+	return ecies.Encrypt(&publicKey, data)
+}
+
+func decryptShoup(privKey *ecdsa.PrivateKey, data []byte) ([]byte, error) {
+
+	privateKey := shoup.PrivateKey{
+		PublicKey: (*shoup.PublicKey)(&privKey.PublicKey),
+		D:         privKey.D,
+	}
+
+	ecies := shoup.NewECIES()
+
+	return ecies.Decrypt(&privateKey, data)
 }
 
 func encryptEthereum(pubKey *ecdsa.PublicKey, data []byte) ([]byte, error) {

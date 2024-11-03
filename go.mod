@@ -11,6 +11,7 @@ require (
 	github.com/ethereum/go-ethereum v1.9.21
 	github.com/gitzhou/bitcoin-ecies v0.0.0-20190123122136-256022cb3655
 	github.com/google/tink/go v1.7.0
+	github.com/hotstar/ecies v1.0.2
 	github.com/kubasiemion/jafgoecies v0.0.0-20210920105008-5b74a8ba4d8e
 	github.com/nnitquan/sghcrypto v0.0.0-20191220061915-7ee05b04659c
 	github.com/obscuren/ecies v0.0.0-20150213224233-7c0f4a9b18d9
